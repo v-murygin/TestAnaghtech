@@ -9,6 +9,7 @@ import SwiftUI
 
 
 struct SearchResultsGridView: View {
+    
     let items: [FlickrItem]
     let columns: [GridItem]
     
@@ -19,22 +20,16 @@ struct SearchResultsGridView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 5) {
                 ForEach(items) { item in
-                    AsyncImage(url: URL(string: item.media.m)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(1, contentMode: .fill)
-                            .frame(width: UIScreen.main.bounds.width / 3 - 10, height: 100)
-                            .clipped()
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .shadow(radius: 2)
-                    } placeholder: {
-                        ProgressView()
-                            .frame(width: UIScreen.main.bounds.width / 3 - 10, height: 100)
-                    }
-                    .onTapGesture {
-                        selectedItem = item
-                        showingOptions = true
-                    }
+                    CachedImageView(url: item.media.m)
+                        .aspectRatio(1, contentMode: .fill)
+                        .frame(width: UIScreen.main.bounds.width / 3 - 10, height: 100)
+                        .clipped()
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .shadow(radius: 2)
+                        .onTapGesture {
+                            selectedItem = item
+                            showingOptions = true
+                        }
                 }
             }
             .padding(.horizontal, 5)
@@ -47,11 +42,12 @@ struct SearchResultsGridView: View {
             NavigationLink("Open in HTML") {
                 AttributedText(.html(withBody: item.description))
             }
-            
-            
+        
             Button("Cancel", role: .cancel) {}
         } message: { item in
             Text("Choose how to open \(item.title)")
         }
     }
 }
+
+

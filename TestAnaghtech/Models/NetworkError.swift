@@ -14,6 +14,7 @@ enum NetworkError: Error {
     case decodingError
     case serverError(Int)
     case unknown
+    case invalidImageData
     
     var description: String {
         switch self {
@@ -25,6 +26,8 @@ enum NetworkError: Error {
             return "Error decoding data"
         case .serverError(let code):
             return "Server error: \(code)"
+        case .invalidImageData:
+            return "Invalid data received from server"
         case .unknown:
             return "Unknown error occurred"
         }

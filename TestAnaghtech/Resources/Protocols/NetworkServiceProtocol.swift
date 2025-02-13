@@ -6,7 +6,10 @@
 //
 
 import Foundation
+import UIKit
+
 
 protocol NetworkServiceProtocol {
     func searchPhotos<T: Decodable>(query: String) async throws -> T
+    func loadImage(from urlString: String) async throws -> UIImage
 }

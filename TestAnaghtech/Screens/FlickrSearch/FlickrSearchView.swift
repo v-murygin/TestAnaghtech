@@ -9,10 +9,11 @@ import SwiftUI
 
 struct FlickrSearchView: View {
     
-    @State private var viewModel = FlickrViewModel()
+    @Environment(\.networkService) private var networkService
+    
+    
     @State private var searchText = ""
-    @State private var errorMessage: String?
-    @State private var showError = false
+    @State private var viewModel = FlickrViewModel()
     
     private let columns = [
         GridItem(.flexible(), spacing: 5),
@@ -42,19 +43,23 @@ struct FlickrSearchView: View {
                 Task {
                     do {
                         try await viewModel.search(for: newValue)
-                    } catch {
-                        showError(error)
+                    }
+                    catch {
+                        viewModel.handleError(error)
                     }
                 }
             }
-            .alert("Error", isPresented: $showError) {
-                Button("OK") { showError = false }
+            .task {
+                viewModel.setup(networkService: networkService)
+            }
+            .alert("Error", isPresented: $viewModel.showError) {
+                Button("OK") { viewModel.showError = false }
                 Button("Reset Search", role: .destructive) {
                     searchText = ""
-                    showError = false
+                    viewModel.showError = false
                 }
             } message: {
-                Text(errorMessage ?? "Unknown error")
+                Text(viewModel.errorMessage ?? "Unknown error")
             }
         }
     }
@@ -70,12 +75,6 @@ struct FlickrSearchView: View {
             .scaleEffect(1.5)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.ultraThinMaterial)
-    }
-    
-    
-    private func showError(_ error: Error) {
-        errorMessage = error.localizedDescription
-        showError = true
     }
 }
 

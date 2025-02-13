@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct FlickrDetailView: View {
+    
     @Environment(\.dismiss) private var dismiss
     
     let item: FlickrItem
@@ -15,14 +16,9 @@ struct FlickrDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                AsyncImage(url: URL(string: item.media.m)) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                } placeholder: {
-                    ProgressView()
-                }
-                .frame(maxWidth: .infinity)
+                CachedImageView(url: item.media.m)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     if !item.title.isEmpty {

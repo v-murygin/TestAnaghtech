@@ -6,11 +6,20 @@
 //
 
 import Foundation
+import UIKit
 
 
-class NetworkService: NetworkServiceProtocol {
+@Observable
+final class NetworkService: NetworkServiceProtocol {
+    
     private enum Constants {
         static let baseURL = "https://api.flickr.com/services/feeds/photos_public.gne"
+    }
+    
+    private let cache: CacheManager
+    
+    init(cache: CacheManager = .shared) {
+        self.cache = cache
     }
     
     func searchPhotos<T: Decodable>(query: String) async throws -> T {
@@ -43,5 +52,32 @@ class NetworkService: NetworkServiceProtocol {
         } catch {
             throw NetworkError.decodingError
         }
+    }
+    
+    func loadImage(from urlString: String) async throws -> UIImage {
+        if let cachedImage = await cache.get(for: urlString) {
+            return cachedImage
+        }
+        
+        guard let url = URL(string: urlString) else {
+            throw NetworkError.invalidURL
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.serverError(httpResponse.statusCode)
+        }
+        
+        guard let image = UIImage(data: data) else {
+            throw NetworkError.invalidImageData
+        }
+        
+        await cache.insert(image, for: urlString)
+        return image
     }
 }
